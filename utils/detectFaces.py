@@ -15,7 +15,7 @@ import face_alignment
 from facenet_pytorch import MTCNN
 import torch
 import numpy as np
-import mmcv, cv2
+import cv2
 from PIL import Image, ImageDraw
 
 def face2head(boxes, scale=1.5):
@@ -72,9 +72,15 @@ def main():
 
     mtcnn = MTCNN(keep_all=True, device=device)
     
-    video = mmcv.VideoReader(args.video_input_path)
-    print("Video statistics: ", video.width, video.height, video.resolution, video.fps)
-    frames = [Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)) for frame in video]
+    video = cv2.VideoCapture(args.video_input_path)
+    frames = []
+    while True:
+        read_ok, frame = video.read()
+        if not read_ok:
+            break
+        frames.append(frame)
+
+    frames = [Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)) for frame in frames]
     print('Number of frames in video: ', len(frames))
     fa = face_alignment.FaceAlignment(face_alignment.LandmarksType._2D, flip_input=False)
 
@@ -84,7 +90,12 @@ def main():
         # Detect faces
         if i % args.detect_every_N_frame == 0:
             boxes, _ = mtcnn.detect(frame)
-            boxes = boxes[:args.number_of_speakers]
+            if boxes is None or len(boxes) == 0:
+                boxes = np.array([[0.0, 0.0, 200.0, 200.0]])
+            boxes = [
+                min(boxes, key=lambda x: x[0]), # leftmost
+                max(boxes, key=lambda x: x[0]), # rightmost
+            ]
             boxes = face2head(boxes, args.scalar_face_detection)
         else:
             boxes = [boxes_dic[j][-1] for j in range(args.number_of_speakers)]
@@ -121,7 +132,7 @@ def main():
             # Add to frame list
             frames_tracked.append(frame_draw)
         dim = frames_tracked[0].size
-        fourcc = cv2.VideoWriter_fourcc(*'FMP4')    
+        fourcc = cv2.VideoWriter_fourcc(*'FMP4')
         video_tracked = cv2.VideoWriter(os.path.join(args.output_path, 'video_tracked' + str(s+1) + '.mp4'), fourcc, 25.0, dim)
         for frame in frames_tracked:
             video_tracked.write(cv2.cvtColor(np.array(frame), cv2.COLOR_RGB2BGR))
