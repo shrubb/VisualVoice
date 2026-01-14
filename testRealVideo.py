@@ -112,7 +112,6 @@ def main():
 			weights=opt.weights_vocal)
 
 	nets = (net_lipreading, net_facial_attributes, net_unet, net_vocal_attributes)
-	print(nets)
 
 	# construct our audio-visual model
 	model = AudioVisualModel(nets, opt)
@@ -148,11 +147,13 @@ def main():
 
 		if opt.reliable_face:
 			best_score = 0
-			for i in range(10):
+			for i in range(20):
 				frame = load_frame(facetrack_path)
 				boxes, scores = mtcnn.detect(frame)
+				if len(scores) == 0 or scores[0] is None:
+					continue
 				if scores[0] > best_score:
-					best_frame = frame			
+					best_frame = frame
 			frames = vision_transform(best_frame).squeeze().unsqueeze(0).cuda()
 		else:
 			frame_list = []

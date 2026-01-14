@@ -122,21 +122,21 @@ def main():
                 landmarks_dic[box_index].append(preds)
                 boxes_dic[box_index].append(box)
     
-    for s in range(args.number_of_speakers):
-        frames_tracked = []
-        for i, frame in enumerate(frames):
-            # Draw faces
-            frame_draw = frame.copy()
-            draw = ImageDraw.Draw(frame_draw)
-            draw.rectangle(boxes_dic[s][i], outline=(255, 0, 0), width=6) 
-            # Add to frame list
-            frames_tracked.append(frame_draw)
-        dim = frames_tracked[0].size
-        fourcc = cv2.VideoWriter_fourcc(*'FMP4')
-        video_tracked = cv2.VideoWriter(os.path.join(args.output_path, 'video_tracked' + str(s+1) + '.mp4'), fourcc, 25.0, dim)
-        for frame in frames_tracked:
-            video_tracked.write(cv2.cvtColor(np.array(frame), cv2.COLOR_RGB2BGR))
-        video_tracked.release()
+#    for s in range(args.number_of_speakers):
+#        frames_tracked = []
+#        for i, frame in enumerate(frames):
+#            # Draw faces
+#            frame_draw = frame.copy()
+#            draw = ImageDraw.Draw(frame_draw)
+#            draw.rectangle(boxes_dic[s][i], outline=(255, 0, 0), width=6) 
+#            # Add to frame list
+#            frames_tracked.append(frame_draw)
+#        dim = frames_tracked[0].size
+#        fourcc = cv2.VideoWriter_fourcc(*'FMP4')
+#        video_tracked = cv2.VideoWriter(os.path.join(args.output_path, 'video_tracked' + str(s+1) + '.mp4'), fourcc, 25.0, dim)
+#        for frame in frames_tracked:
+#            video_tracked.write(cv2.cvtColor(np.array(frame), cv2.COLOR_RGB2BGR))
+#        video_tracked.release()
 
     # Save landmarks
     for i in range(args.number_of_speakers):    

@@ -9,7 +9,7 @@ python ./utils/detectFaces.py \
 	--output_path $output_path \
 	--number_of_speakers 2 \
 	--scalar_face_detection 1.5 \
-	--detect_every_N_frame 8
+	--detect_every_N_frame 1
 
 ffmpeg -y -i $input_path -vn -ar 16000 -ac 1 -ab 192k -f wav $output_path/audio.wav
 
@@ -51,4 +51,19 @@ python testRealVideo.py \
 	--lipreading_extract_feature \
 	--number_of_identity_frames 1 \
 	--output_dir_root $output_path/
+
+ffmpeg \
+  -i $input_path \
+  -i $output_path/speaker1.wav \
+  -i $output_path/speaker2.wav \
+  -map 0:v \
+  -map 0:a \
+  -map 1:a \
+  -map 2:a \
+  -c:v copy \
+  -c:a aac \
+  -metadata:s:a:0 language=ori \
+   -metadata:s:a:1 language=lvv \
+  -metadata:s:a:2 language=rvv \
+  $output_path/$(basename -- "$output_path").mp4
 
